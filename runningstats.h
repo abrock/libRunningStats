@@ -10,21 +10,43 @@
 class RunningStats {
 
 public:
+
+    template<class StatsVec>
+    static std::vector<double> getMean(const StatsVec& vec);
+
+    template<class StatsVec>
+    static std::vector<double> getStddev(const StatsVec& vec);
+
+    template<class StatsVec>
+    static std::vector<double> getMin(const StatsVec& vec);
+
+    template<class StatsVec>
+    static std::vector<double> getMax(const StatsVec& vec);
+
+    template<class StatsVec>
+    static std::vector<size_t> getCount(const StatsVec& vec);
+
     void clear();
 
     void push(const double value);
 
-    double getMean();
+    double getMean() const;
 
-    double getLogMean();
+    double getLogMean() const;
 
-    double getVar();
+    double getVar() const;
 
-    double getLogVar();
+    double getLogVar() const;
 
-    double getStddev();
+    double getStddev() const;
 
-    double getLogStddev();
+    double getLogStddev() const;
+
+    double getMin() const;
+
+    double getMax() const;
+
+    size_t getCount() const;
 
     void print(std::ostream& out);
 

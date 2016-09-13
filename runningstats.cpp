@@ -13,6 +13,9 @@ void RunningStats::clear() {
 }
 
 void RunningStats::push(const double value) {
+    if (!std::isfinite(value)) {
+        return;
+    }
     if (n == 0) {
         min = value;
         max = value;
@@ -41,34 +44,34 @@ void RunningStats::push(const double value) {
     }
 }
 
-double RunningStats::getMean() {
+double RunningStats::getMean() const {
     if (n < 1) {
         return 0;
     }
     return sum / n;
 }
-double RunningStats::getLogMean() {
+double RunningStats::getLogMean() const {
     if (log_n < 1) {
         return 0;
     }
     return log_sum / log_n;
 }
-double RunningStats::getVar() {
+double RunningStats::getVar() const {
     if (n < 2) {
         return 0;
     }
     return 1.0/(n-1) * (squaresum - sum*sum / n);
 }
-double RunningStats::getLogVar() {
+double RunningStats::getLogVar() const {
     if (log_n < 2) {
         return 0;
     }
     return 1.0/(log_n-1) * (log_square_sum - log_sum*log_sum / log_n);
 }
-double RunningStats::getStddev() {
+double RunningStats::getStddev() const {
     return std::sqrt(getVar());
 }
-double RunningStats::getLogStddev() {
+double RunningStats::getLogStddev() const {
     return std::sqrt(getLogVar());
 }
 void RunningStats::print(std::ostream& out) {
@@ -94,6 +97,75 @@ std::string RunningStats::printLog() {
 std::string RunningStats::printBoth() {
     return print() + "\nLogarithmic: " + printLog();
 }
+
+template<class StatsVec>
+std::vector<double> RunningStats::getMean(const StatsVec& vec) {
+    std::vector<double> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getMean());
+    }
+    return result;
+}
+
+template<class StatsVec>
+std::vector<double> RunningStats::getStddev(const StatsVec& vec) {
+    std::vector<double> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getStddev());
+    }
+    return result;
+}
+
+template<class StatsVec>
+std::vector<double> RunningStats::getMin(const StatsVec& vec) {
+    std::vector<double> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getMin());
+    }
+    return result;
+}
+
+template<class StatsVec>
+std::vector<double> RunningStats::getMax(const StatsVec& vec) {
+    std::vector<double> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getMax());
+    }
+    return result;
+}
+
+template<class StatsVec>
+std::vector<size_t> RunningStats::getCount(const StatsVec& vec) {
+    std::vector<size_t> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getCount());
+    }
+    return result;
+}
+
+template std::vector<double> RunningStats::getStddev(const std::vector<RunningStats>& vec);
+template std::vector<double> RunningStats::getMean(const std::vector<RunningStats>& vec);
+template std::vector<double> RunningStats::getMin(const std::vector<RunningStats>& vec);
+template std::vector<double> RunningStats::getMax(const std::vector<RunningStats>& vec);
+template std::vector<size_t> RunningStats::getCount(const std::vector<RunningStats>& vec);
+
+size_t RunningStats::getCount() const {
+    return n;
+}
+
+double RunningStats::getMin() const {
+    return min;
+}
+
+double RunningStats::getMax() const {
+    return max;
+}
+
 
 void QuantileStats::push(const double value){
     sorted = false;
@@ -124,3 +196,6 @@ void QuantileStats::sort() {
         sorted = true;
     }
 }
+
+
+
