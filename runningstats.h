@@ -73,16 +73,23 @@ public:
     size_t log_n = 0;
 };
 
+template<class T>
 class QuantileStats : public RunningStats {
 public:
     void push(const double value);
 
-    float getQuantile(const double quantile);
+    T getQuantile(const double quantile);
+
+    double getAccurateVariance() const;
+
+    double getAccurateStddev() const;
+
+    double reserve(const size_t size);
 
 private:
     void sort();
 
-    std::vector<float> values;
+    std::vector<T> values;
     bool sorted = true;
 };
 

@@ -166,14 +166,15 @@ double RunningStats::getMax() const {
     return max;
 }
 
-
-void QuantileStats::push(const double value){
+template<class T>
+void QuantileStats<T>::push(const double value){
     sorted = false;
     values.push_back(value);
     RunningStats::push(value);
 }
 
-float QuantileStats::getQuantile(const double quantile) {
+template<class T>
+T QuantileStats<T>::getQuantile(const double quantile) {
     if (quantile <= 0) {
         return min;
     }
@@ -187,15 +188,40 @@ float QuantileStats::getQuantile(const double quantile) {
         return values[0];
     }
     sort();
-    return values[(size_t)(quantile * (values.size()-1))];
+    return values[static_cast<size_t>(quantile * (values.size()-1))];
 }
 
-void QuantileStats::sort() {
+template<class T>
+void QuantileStats<T>::sort() {
     if (!sorted) {
         std::sort(values.begin(), values.end());
         sorted = true;
     }
 }
 
+template<class T>
+double QuantileStats<T>::getAccurateVariance() const {
+    if (n < 2) {
+        return 0;
+    }
+    double square_sum = 0;
+    const double mean = getMean();
+    for (const T val : values) {
+        square_sum += (val - mean) * (val - mean);
+    }
+    return square_sum / (n-1);
+}
+
+template<class T>
+double QuantileStats<T>::getAccurateStddev() const {
+    return std::sqrt(getAccurateVariance());
+}
+
+template<class T>
+double QuantileStats<T>::reserve(const size_t size) {
+    values.reserve(size);
+}
 
 
+template class QuantileStats<double>;
+template class QuantileStats<float>;
