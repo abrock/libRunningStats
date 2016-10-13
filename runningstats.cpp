@@ -16,31 +16,34 @@ void RunningStats::push(const double value) {
     if (!std::isfinite(value)) {
         return;
     }
-    if (n == 0) {
-        min = value;
-        max = value;
-    }
-    else {
-        min = std::min(min, (double)value);
-        max = std::max(max, (double)value);
-    }
-    sum += value;
-    squaresum += value * value;
-    n++;
-
-    if (calcLog && value > 0) {
-        double log_val = std::log(static_cast<double>(value)) / std::log(10);
-        log_sum += log_val;
-        log_square_sum += log_val * log_val;
-        if (log_n == 0) {
-            log_min = log_val;
-            log_max = log_val;
+#pragma omp critical
+    {
+        if (n == 0) {
+            min = value;
+            max = value;
         }
         else {
-            log_min = std::min(log_min, log_val);
-            log_max = std::max(log_max, log_val);
+            min = std::min(min, (double)value);
+            max = std::max(max, (double)value);
         }
-        log_n++;
+        sum += value;
+        squaresum += value * value;
+        n++;
+
+        if (calcLog && value > 0) {
+            double log_val = std::log(static_cast<double>(value)) / std::log(10);
+            log_sum += log_val;
+            log_square_sum += log_val * log_val;
+            if (log_n == 0) {
+                log_min = log_val;
+                log_max = log_val;
+            }
+            else {
+                log_min = std::min(log_min, log_val);
+                log_max = std::max(log_max, log_val);
+            }
+            log_n++;
+        }
     }
 }
 
@@ -148,11 +151,28 @@ std::vector<size_t> RunningStats::getCount(const StatsVec& vec) {
     return result;
 }
 
+template<class T, class StatsVec>
+std::vector<T> RunningStats::getMedian(const StatsVec& vec) {
+    std::vector<T> result;
+    result.reserve(vec.size());
+    for (const auto& it : vec) {
+        result.push_back(it.getMedian());
+    }
+    return result;
+}
+
 template std::vector<double> RunningStats::getStddev(const std::vector<RunningStats>& vec);
 template std::vector<double> RunningStats::getMean(const std::vector<RunningStats>& vec);
 template std::vector<double> RunningStats::getMin(const std::vector<RunningStats>& vec);
 template std::vector<double> RunningStats::getMax(const std::vector<RunningStats>& vec);
 template std::vector<size_t> RunningStats::getCount(const std::vector<RunningStats>& vec);
+
+template std::vector<double> RunningStats::getStddev(const std::vector<QuantileStats<double> >& vec);
+template std::vector<double> RunningStats::getMean(const std::vector<QuantileStats<double> >& vec);
+template std::vector<double> RunningStats::getMin(const std::vector<QuantileStats<double> >& vec);
+template std::vector<double> RunningStats::getMax(const std::vector<QuantileStats<double> >& vec);
+template std::vector<double> RunningStats::getMedian(const std::vector<QuantileStats<double> >& vec);
+template std::vector<size_t> RunningStats::getCount(const std::vector<QuantileStats<double> >& vec);
 
 size_t RunningStats::getCount() const {
     return n;
@@ -167,14 +187,20 @@ double RunningStats::getMax() const {
 }
 
 template<class T>
+T QuantileStats<T>::getMedian() const {
+    return getQuantile(0.5);
+}
+
+template<class T>
 void QuantileStats<T>::push(const double value){
     sorted = false;
     values.push_back(value);
     RunningStats::push(value);
 }
 
+
 template<class T>
-T QuantileStats<T>::getQuantile(const double quantile) {
+T QuantileStats<T>::getQuantile(const double quantile) const {
     if (quantile <= 0) {
         return min;
     }
@@ -192,7 +218,7 @@ T QuantileStats<T>::getQuantile(const double quantile) {
 }
 
 template<class T>
-void QuantileStats<T>::sort() {
+void QuantileStats<T>::sort() const {
     if (!sorted) {
         std::sort(values.begin(), values.end());
         sorted = true;

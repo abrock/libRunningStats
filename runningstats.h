@@ -26,6 +26,9 @@ public:
     template<class StatsVec>
     static std::vector<size_t> getCount(const StatsVec& vec);
 
+    template<class T, class StatsVec>
+    static std::vector<T> getMedian(const StatsVec& vec);
+
     void clear();
 
     void push(const double value);
@@ -78,7 +81,9 @@ class QuantileStats : public RunningStats {
 public:
     void push(const double value);
 
-    T getQuantile(const double quantile);
+    T getQuantile(const double quantile) const;
+
+    T getMedian() const;
 
     double getAccurateVariance() const;
 
@@ -87,10 +92,10 @@ public:
     double reserve(const size_t size);
 
 private:
-    void sort();
+    void sort() const;
 
-    std::vector<T> values;
-    bool sorted = true;
+    mutable std::vector<T> values;
+    mutable bool sorted = true;
 };
 
 #endif // RUNNINGSTATS_H
