@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(RunningStats)
 
-add_library(RunningStats runningstats.cpp)
-
+if (NOT TARGET RunningStats)
+  add_library(RunningStats runningstats.cpp)
+endif()
