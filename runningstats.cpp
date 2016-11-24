@@ -244,7 +244,7 @@ double QuantileStats<T>::getAccurateStddev() const {
 }
 
 template<class T>
-double QuantileStats<T>::reserve(const size_t size) {
+void QuantileStats<T>::reserve(const size_t size) {
     values.reserve(size);
 }
 

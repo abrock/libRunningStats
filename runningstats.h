@@ -89,7 +89,7 @@ public:
 
     double getAccurateStddev() const;
 
-    double reserve(const size_t size);
+    void reserve(const size_t size);
 
 private:
     void sort() const;
