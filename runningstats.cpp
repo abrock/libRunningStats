@@ -248,6 +248,12 @@ void QuantileStats<T>::reserve(const size_t size) {
     values.reserve(size);
 }
 
+template<class T>
+std::vector<T> QuantileStats<T>::getData() {
+    sort();
+    return values;
+}
+
 
 template class QuantileStats<double>;
 template class QuantileStats<float>;

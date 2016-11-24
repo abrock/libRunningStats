@@ -91,6 +91,8 @@ public:
 
     void reserve(const size_t size);
 
+    std::vector<T> getData();
+
 private:
     void sort() const;
 
